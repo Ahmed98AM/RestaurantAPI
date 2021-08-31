@@ -1,5 +1,5 @@
 const mongoose = require('mongoose');
-const Tour = require('./tourModel');
+const Restaurant = require('./restaurantModel');
 const reviewSchema = new mongoose.Schema(
   {
     review: {
@@ -15,16 +15,15 @@ const reviewSchema = new mongoose.Schema(
       type: Date,
       default: Date.now,
     },
-    tour: {
+    restaurant: {
       type: mongoose.Schema.ObjectId,
-      ref: 'Tour',
-      required: [true, 'Review must belong to a tour'],
+      ref: 'Restaurant',
+      required: [true, 'Review must belong to a restaurant'],
     },
-
     user: {
       type: mongoose.Schema.ObjectId,
       ref: 'User',
-      required: [true, 'Review must have an auther'],
+      required: [true, 'Review must have an user'],
     },
   },
   {
@@ -32,7 +31,7 @@ const reviewSchema = new mongoose.Schema(
     toObject: { virtuals: true },
   }
 );
-reviewSchema.index({ tour: 1, user: 1 }, { unique: true });
+reviewSchema.index({ restaurant: 1, user: 1 }, { unique: true });
 reviewSchema.pre(/^find/, function (next) {
   this.populate({
     path: 'user',
@@ -40,40 +39,40 @@ reviewSchema.pre(/^find/, function (next) {
   });
   next();
 });
-reviewSchema.statics.calculateAvgRatings = async function (tourId) {
+reviewSchema.statics.calculateAvgRatings = async function (restaurantId) {
   const stats = await this.aggregate([
     {
-      $match: { tour: tourId },
+      $match: { restaurant: restaurantId },
     },
     {
       $group: {
-        _id: '$tour',
+        _id: '$restaurant',
         nRatings: { $sum: 1 },
         avgRatings: { $avg: '$rating' },
       },
     },
   ]);
   if (stats.length > 0) {
-    await Tour.findByIdAndUpdate(tourId, {
+    await Restaurant.findByIdAndUpdate(restaurantId, {
       ratingQuantity: stats[0].nRatings,
       ratingAverage: stats[0].avgRatings,
     });
   } else {
-    await Tour.findByIdAndUpdate(tourId, {
+    await Restaurant.findByIdAndUpdate(restaurantId, {
       ratingQuantity: 0,
       ratingAverage: 4.5,
     });
   }
 };
 reviewSchema.post('save', function () {
-  this.constructor.calculateAvgRatings(this.tour);
+  this.constructor.calculateAvgRatings(this.restaurant);
 });
 reviewSchema.pre(/^findOneAnd/, async function (next) {
   this.r = await this.findOne();
   next();
 });
 reviewSchema.post(/^findOneAnd/, async function () {
-  await this.r.constructor.calculateAvgRatings(this.r.tour);
+  await this.r.constructor.calculateAvgRatings(this.r.restaurant);
 });
 
 const Review = mongoose.model('Review', reviewSchema);

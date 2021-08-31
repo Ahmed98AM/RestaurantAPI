@@ -5,7 +5,7 @@ const rateLimiter = require('express-rate-limit');
 const helmet = require('helmet');
 const mongoSanitize = require('express-mongo-sanitize');
 const xss = require('xss-clean');
-const tourRouter = require('./routes/tourRoutes');
+const restaurantRouter = require('./routes/restaurantRoutes');
 const userRouter = require('./routes/userRoutes');
 const reviewRouter = require('./routes/reviewRoutes');
 const AppError = require('./utils/appError');
@@ -45,16 +45,11 @@ app.use(
 );
 // Serving static files
 app.use(express.static(`${__dirname}/public`));
-// Test middleware
-app.use((req, res, next) => {
-  req.requestTime = new Date().toISOString();
-  next();
-});
 
 //// routes
-app.use('/api/v1/reviews', reviewRouter);
-app.use('/api/v1/tours', tourRouter);
-app.use('/api/v1/users', userRouter);
+app.use('/reviews', reviewRouter);
+app.use('/restaurants', restaurantRouter);
+app.use('/users', userRouter);
 
 app.all('*', (req, res, next) => {
   next(new AppError(`couldn't find ${req.originalUrl} on the server`, 404));

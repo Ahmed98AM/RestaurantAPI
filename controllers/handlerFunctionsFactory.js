@@ -21,7 +21,6 @@ exports.updateOne = (Model) =>
       runValidators: true,
     });
     if (!doc) {
-      console.log('no Tour');
       return next(new AppError('no document found with that id !', 404));
     }
     res.status(200).json({
@@ -53,14 +52,16 @@ exports.getOne = (Model, populateOptions) =>
   });
 exports.getAll = (Model) =>
   catchAsync(async (req, res, next) => {
-    const idFilter = req.params.tourId ? { tour: req.params.tourId } : {};
+    const idFilter = req.params.restaurantId
+      ? { restaurant: req.params.restaurantId }
+      : {};
     const features = new API_features(Model.find(idFilter), req.query)
       .filter()
       .sort()
       .selectFields()
       .paginate();
 
-    const doc = await features.queryCollection;
+    const doc = await features.query;
 
     res.status(200).json({
       status: 'success',

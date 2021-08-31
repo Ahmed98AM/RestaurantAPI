@@ -1,7 +1,7 @@
 const User = require('../models/userModel');
 const catchAsync = require('../utils/catchAsync');
 const AppError = require('../utils/appError');
-const factory = require('../controllers/handlerFactory');
+const factory = require('./handlerFunctionsFactory');
 
 const filterObj = function (obj, ...wantedFields) {
   const newObj = {};
@@ -22,7 +22,6 @@ exports.getMe = function (req, res, next) {
   next();
 };
 exports.updateMe = catchAsync(async function (req, res, next) {
-  //// Create error if user POSTed password data
   if (req.body.password || req.body.passwordConfirm) {
     return next(
       new AppError(
@@ -31,9 +30,7 @@ exports.updateMe = catchAsync(async function (req, res, next) {
       )
     );
   }
-  //// Filter out unwanted fields
   const filteredBody = filterObj(req.body, 'name', 'email');
-  //// Update user document
   const updatedUser = await User.findByIdAndUpdate(req.user.id, filteredBody, {
     new: true,
     runValidators: true,

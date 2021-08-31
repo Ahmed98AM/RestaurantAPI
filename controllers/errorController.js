@@ -1,25 +1,23 @@
 const AppError = require('../utils/appError');
 
-const handleCastErrorDB = function (err) {
+const castErrorDBHandler = function (err) {
   return new AppError(`could't find ${err.path}:${err.value}`, 400);
 };
-const handleDuplicateFieldsDB = function (err) {
+const duplicateFieldsDBHandler = function (err) {
   let dubField = err.keyValue.name;
-  // dubField = dubField.match(/(["'])(\\?.)*?\1/);
   return new AppError(
     `Duplicate field value: ${dubField}. Please use another value!`,
     400
   );
 };
-const handleValidationErrorDB = function (err) {
+const validationErrorDBHandler = function (err) {
   const validErrors = Object.values(err.errors).map((err) => err.message);
-  console.log(validErrors);
   return new AppError(`${validErrors.join('. ')}`, 400);
 };
-const handleJWTError = function () {
+const JWTErrorhandler = function () {
   return new AppError(`Invalid token, please login again !`, 401);
 };
-const handleJWTExpired = function () {
+const JWTExpiredHandler = function () {
   return new AppError(`Your token has expired, please login again !`, 401);
 };
 
@@ -49,25 +47,25 @@ module.exports = (err, req, res, next) => {
   err.statusCode = err.statusCode || 500;
   err.status = err.status || 'error';
   const envType = process.env.NODE_ENV;
-  console.log(envType);
+
   if (envType === 'development') {
     sendErrorDev(res, err);
   } else {
     let error = { ...err };
     if (err.name === 'CastError') {
-      error = handleCastErrorDB(error);
+      error = castErrorDBHandler(error);
     }
     if (error.code === 11000) {
-      error = handleDuplicateFieldsDB(error);
+      error = duplicateFieldsDBHandler(error);
     }
     if (err.name === 'ValidationError') {
-      error = handleValidationErrorDB(error);
+      error = validationErrorDBHandler(error);
     }
     if (err.name === 'JsonWebTokenError') {
-      error = handleJWTError();
+      error = JWTErrorhandler();
     }
     if (err.name === 'TokenExpiredError') {
-      error = handleJWTExpired();
+      error = JWTExpiredHandler();
     }
     sendErrorProd(res, error);
   }

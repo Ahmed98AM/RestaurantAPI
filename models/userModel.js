@@ -6,7 +6,7 @@ const bcrypt = require('bcrypt');
 const userSchema = new mongoose.Schema({
   name: {
     type: String,
-    required: [true, 'please tell us your name !'],
+    required: [true, 'please provide your name !'],
   },
   email: {
     type: String,
@@ -19,10 +19,9 @@ const userSchema = new mongoose.Schema({
   password: {
     type: String,
     required: [true, 'please provide a password !'],
-    minlength: 8,
+    minlength: 5,
     select: false,
   },
-  passwordChangedAt: Date,
   passwordConfirm: {
     type: String,
     required: [true, 'please confirm your password !'],
@@ -30,42 +29,43 @@ const userSchema = new mongoose.Schema({
       validator: function (confirmPass) {
         return this.password === confirmPass;
       },
-      message: "the password doesn't match !",
+      message: "the passwords don't match !",
     },
   },
-  role: {
-    type: String,
-    enum: ['user', 'admin', 'guide', 'lead-guide'],
-    default: 'user',
-  },
+  passwordChangedAt: Date,
   passwordResetExpires: Date,
   passwordResetToken: String,
+  role: {
+    type: String,
+    enum: ['user', 'admin'],
+    default: 'user',
+  },
   active: {
     type: Boolean,
     default: true,
     select: false,
   },
 });
-// userSchema.pre('save', async function (next) {
-//   if (!this.isModified('password')) return next();
-//   this.password = await bcrypt.hash(this.password, 12);
-//   this.passwordConfirm = undefined;
-//   next();
-// });
-// userSchema.pre('save', async function (next) {
-//   if (!this.isModified('password') || this.isNew) return next();
-//   this.passwordChangedAt = Date.now() - 1000;
-// });
+userSchema.pre('save', async function (next) {
+  if (!this.isModified('password')) return next();
+  this.password = await bcrypt.hash(this.password, 12);
+  this.passwordConfirm = undefined;
+  next();
+});
+userSchema.pre('save', async function (next) {
+  if (!this.isModified('password') || this.isNew) return next();
+  this.passwordChangedAt = Date.now() - 1000;
+});
 userSchema.pre('/^find/', async function (next) {
   this.find({ active: { $ne: false } });
   next();
 });
 
 userSchema.methods.correctPassword = async function (
-  candidatePassword,
-  userPassword
+  toBeConfirmedPassword,
+  userCurrentPassword
 ) {
-  return await bcrypt.compare(candidatePassword, userPassword);
+  return await bcrypt.compare(toBeConfirmedPassword, userCurrentPassword);
 };
 userSchema.methods.changedPasswordAfter = function (JWTTimestamp) {
   if (this.passwordChangedAt) {

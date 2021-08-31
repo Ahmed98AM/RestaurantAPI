@@ -1,40 +1,40 @@
 class API_features {
-  constructor(queryCollection, queryString) {
-    this.queryCollection = queryCollection;
-    this.queryString = queryString;
+  constructor(query, reqBodyQueryObject) {
+    this.query = query;
+    this.reqBodyQueryObject = reqBodyQueryObject;
   }
   filter() {
-    const queryObj = { ...this.queryString };
+    const queryObj = { ...this.reqBodyQueryObject };
+
     const excludedQueries = ['page', 'sort', 'limit', 'fields'];
     excludedQueries.forEach((el) => delete queryObj[el]);
     let queryStr = JSON.stringify(queryObj);
     queryStr = queryStr.replace(/\b(lt|gt|lte|gte)\b/g, (match) => `$${match}`);
-    this.queryCollection = this.queryCollection.find(JSON.parse(queryStr));
+    this.query = this.query.find(JSON.parse(queryStr));
     return this;
   }
   sort() {
-    if (this.queryString.sort) {
-      const sortQueries = this.queryString.sort.split(',').join(' ');
-      this.queryCollection = this.queryCollection.sort(sortQueries);
+    if (this.reqBodyQueryObject.sort) {
+      const sortQueries = this.reqBodyQueryObject.sort.split(',').join(' ');
+      console.log(this.reqBodyQueryObject.sort);
+      this.query = this.query.sort(sortQueries);
     } else {
-      this.queryCollection = this.queryCollection.sort('-createdAt');
+      this.query = this.query.sort('-createdAt');
     }
     return this;
   }
   selectFields() {
-    if (this.queryString.fields) {
-      const fieldsQueries = this.queryString.fields.split(',').join(' ');
-      this.queryCollection = this.queryCollection.select(fieldsQueries);
-    } else {
-      this.queryCollection = this.queryCollection.select('-__v');
+    if (this.reqBodyQueryObject.fields) {
+      const fieldsQueries = this.reqBodyQueryObject.fields.split(',').join(' ');
+      this.query = this.query.select(fieldsQueries);
     }
     return this;
   }
   paginate() {
-    const limit = this.queryString.limit * 1;
-    const page = this.queryString.page * 1;
+    const limit = this.reqBodyQueryObject.limit * 1 || 20;
+    const page = this.reqBodyQueryObject.page * 1 || 1;
     const skip = (page - 1) * limit;
-    this.queryCollection = this.queryCollection.skip(skip).limit(limit);
+    this.query = this.query.skip(skip).limit(limit);
     return this;
   }
 }

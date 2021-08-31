@@ -1,9 +1,8 @@
 const Review = require('../models/reviewModel');
-const catchAsync = require('../utils/catchAsync');
-const factory = require('../controllers/handlerFactory');
+const factory = require('./handlerFunctionsFactory');
 
-exports.setTourUserId = function (req, res, next) {
-  if (!req.body.tour) req.body.tour = req.params.tourId;
+exports.setRestaurantUserId = function (req, res, next) {
+  if (!req.body.restaurant) req.body.restaurant = req.params.restaurantId;
   if (!req.body.user) req.body.user = req.user.id;
   next();
 };
