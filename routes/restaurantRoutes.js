@@ -2,8 +2,8 @@ const express = require('express');
 const restaurantController = require('../controllers/restaurantController');
 const authController = require('../controllers/authController');
 const reviewRouter = require('./reviewRoutes');
-
 const router = express.Router();
+
 router.use('/:restaurantId/reviews', reviewRouter);
 
 router

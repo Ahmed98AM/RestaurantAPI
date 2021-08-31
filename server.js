@@ -15,7 +15,7 @@ mongoose
     useUnifiedTopology: true,
   })
   .then(() => {
-    console.log('DB connection Successful');
+    console.log('DB connection Successful !');
   });
 
 const server = app.listen(process.env.PORT, () => {

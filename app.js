@@ -33,14 +33,7 @@ const hpp = require('hpp');
 // Preventing parameter polution
 app.use(
   hpp({
-    whitelist: [
-      'duration',
-      'ratingsQuantity',
-      'ratingsAverage',
-      'maxGroupSize',
-      'difficulty',
-      'price',
-    ],
+    whitelist: ['ratingsQuantity', 'ratingsAverage', 'avgPrice'],
   })
 );
 // Serving static files
