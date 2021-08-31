@@ -64,12 +64,6 @@ const restaurantSchema = new mongoose.Schema(
         day: Number,
       },
     ],
-    // reviews: [
-    //   {
-    //     type: mongoose.Schema.ObjectId,
-    //     ref: 'Review',
-    //   },
-    // ],
   },
   {
     toJSON: { virtuals: true },
